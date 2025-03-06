@@ -12,10 +12,9 @@ import (
 	"UnQue/models"
 )
 
-// Login handles POST /login requests.
 func Login(c *gin.Context) {
 	var input struct {
-		Username string `json:"username"`
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 
@@ -24,20 +23,23 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	ctx, cnl := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cnl()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	user_collection := configs.DB.Collection("users")
+	userCollection := configs.DB.Collection("users")
 	var user models.User
-	err := user_collection.FindOne(ctx, bson.M{"username": input.Username, "password": input.Password}).Decode(&user)
+
+	err := userCollection.FindOne(ctx, bson.M{
+		"email":    input.Email,
+		"password": input.Password,
+	}).Decode(&user)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
-	// In this example, the token is simply the username.
 	c.JSON(http.StatusOK, gin.H{
-		"token": user.Username,
+		"token": user.Email,
 		"user":  user,
 	})
 }
