@@ -2,6 +2,7 @@ package routes
 
 import (
 	"UnQue/control"
+	"UnQue/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,17 +10,19 @@ import (
 func SetupRoutes() *gin.Engine {
 	router := gin.Default()
 
+	// Public route
 	router.POST("/login", control.Login)
 
-	router.POST("/availability", control.SetAvailability)
-
-	router.GET("/availability", control.GetAvailability)
-
-	router.POST("/appointments", control.BookAppointment)
-
-	router.DELETE("/appointments/:id", control.CancelAppointment)
-
-	router.GET("/appointments", control.GetAppointments)
+	// Protected routes group
+	protected := router.Group("/")
+	protected.Use(middleware.AuthMiddleware())
+	{
+		protected.POST("/availability", control.SetAvailability)
+		protected.GET("/availability", control.GetAvailability)
+		protected.POST("/appointments", control.BookAppointment)
+		protected.DELETE("/appointments/:id", control.CancelAppointment)
+		protected.GET("/appointments", control.GetAppointments)
+	}
 
 	return router
 }
