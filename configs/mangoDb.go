@@ -11,6 +11,7 @@ import (
 
 var DB *mongo.Database
 
+// feat: connect to MongoDB using local URI and set global DB variable
 func ConnectDB() *mongo.Database {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
@@ -22,10 +23,11 @@ func ConnectDB() *mongo.Database {
 		log.Fatal("Error:", err)
 	}
 
+	// feat: ping the database to verify connection
 	if err = client.Ping(ctx, nil); err != nil {
 		log.Fatal("Error pinging:", err)
 	}
 
-	DB = client.Database("college_appointment")
+	DB = client.Database("unque_db")
 	return DB
 }
