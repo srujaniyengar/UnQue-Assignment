@@ -13,7 +13,7 @@ import (
 	"UnQue/models"
 )
 
-// BookAppointment: handle --> POST /appointments.
+// BookAppointment handles POST /appointments.
 func BookAppointment(c *gin.Context) {
 	usr_intf, exists := c.Get("user")
 	if !exists {
@@ -73,7 +73,7 @@ func BookAppointment(c *gin.Context) {
 	c.JSON(http.StatusOK, appointment)
 }
 
-// CancelAppointment: handle --> DELETE /appointments/:id.
+// CancelAppointment handles DELETE /appointments/:id.
 func CancelAppointment(c *gin.Context) {
 	usr_intf, exists := c.Get("user")
 	if !exists {
@@ -121,7 +121,7 @@ func CancelAppointment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Appointment cancelled"})
 }
 
-// GetAppointments: handle --> GET /appointments.
+// GetAppointments handles GET /appointments.
 func GetAppointments(c *gin.Context) {
 	usr_intf, exists := c.Get("user")
 	if !exists {

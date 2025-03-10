@@ -13,16 +13,17 @@ import (
 	"UnQue/models"
 )
 
+// feat: SetAvailability - handle professor setting availability.
 func SetAvailability(c *gin.Context) {
-
 	usr_intf, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
+	// feat: Verify user is a professor.
 	proff, ok := usr_intf.(models.User)
-	if !ok || proff.Role != "proff" {
+	if !ok || proff.Role != "professor" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Only professors can set availability"})
 		return
 	}
@@ -30,17 +31,20 @@ func SetAvailability(c *gin.Context) {
 	var input struct {
 		Slots []string `json:"slots"`
 	}
+	// feat: Bind JSON input.
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
+	// feat: Create timeout context.
 	contxt, cnl := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cnl()
 
 	slot_collection := configs.DB.Collection("timeslots")
 	var createdSlots []models.TimeSlot
 
+	// feat: Loop over each slot and insert into timeslots.
 	for _, slot := range input.Slots {
 		timeslot := models.TimeSlot{
 			Professor: proff.ID,
@@ -56,9 +60,11 @@ func SetAvailability(c *gin.Context) {
 		createdSlots = append(createdSlots, timeslot)
 	}
 
+	// feat: Return created timeslots.
 	c.JSON(http.StatusOK, createdSlots)
 }
 
+// feat: GetAvailability - handle fetching available timeslots.
 func GetAvailability(c *gin.Context) {
 	professorIDHex := c.Query("professor_id")
 	if professorIDHex == "" {
@@ -68,15 +74,17 @@ func GetAvailability(c *gin.Context) {
 
 	professorID, err := primitive.ObjectIDFromHex(professorIDHex)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid proff ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid professor ID"})
 		return
 	}
 
+	// feat: Create timeout context.
 	contxt, cnl := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cnl()
 
 	slot_collection := configs.DB.Collection("timeslots")
-	filter := bson.M{"proff": professorID, "booked": false}
+	// feat: Filter timeslots by professor and available status.
+	filter := bson.M{"professor": professorID, "booked": false}
 	cursor, err := slot_collection.Find(contxt, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch availability"})
